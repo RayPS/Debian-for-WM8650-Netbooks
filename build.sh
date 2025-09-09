@@ -173,8 +173,8 @@ if [ -z "$skip_kernel" ]; then (
 	log OK "Config created"
 
 	log INFO "Building kernel"
-	make LOCALVERSION= -j"$(nproc)" zImage vt8500/wm8505-ref.dtb
-	cat arch/arm/boot/zImage arch/arm/boot/dts/vt8500/wm8505-ref.dtb > zImage_w_dtb
+	make LOCALVERSION= -j"$(nproc)" zImage vt8500/wm8650-mid.dtb
+	cat arch/arm/boot/zImage arch/arm/boot/dts/vt8500/wm8650-mid.dtb > zImage_w_dtb
 	log INFO "Building modules"
 	make LOCALVERSION= -j"$(nproc)" modules
 	touch .build_complete
@@ -199,9 +199,8 @@ mount "$loopdev"p2 rootfs
 log OK "Disk image mounted"
 
 log INFO "Generating boot images"
-mkdir boot/script
-mkimage -A arm -O linux -T kernel -C none -a 0x8000 -e 0x8000 -n linux -d "$KERNEL_DIR/zImage_w_dtb" boot/script/uzImage.bin
-mkimage -A arm -O linux -T script -C none -a 1 -e 0 -n "script image" -d boot.cmd boot/script/scriptcmd
+mkimage -A arm -O linux -T kernel -C none -a 0x8000 -e 0x8000 -n linux -d "$KERNEL_DIR/zImage_w_dtb" boot/uzImage.bin
+mkimage -A arm -O linux -T script -C none -a 1 -e 0 -n "script image" -d boot.cmd boot/wmt_scriptcmd
 log OK "Boot ready"
 
 log INFO "Bootstrapping rootfs"
@@ -238,6 +237,7 @@ log INFO "Detaching loop device"
 losetup -d "$loopdev"
 log INFO "Compressing disk image"
 pv disk.img | pigz -9 > "build/disk-$kernel_release.img.gz"
+mv disk.img "build/disk-$kernel_release.img"
 log INFO "Fixing permissions"
 [ -n "$SUDO_USER" ] && chown -R "$SUDO_UID:$SUDO_GID" build
 log OK "Build complete"
